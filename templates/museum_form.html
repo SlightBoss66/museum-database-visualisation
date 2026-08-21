@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+{% block title %}{{ 'Add Museum' if mode == 'add' else 'Edit Museum' }} · MuseumDB{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-xl-9">
+    <div class="card shadow-sm">
+      <div class="card-header bg-white fw-semibold">{{ 'Add a new museum' if mode == 'add' else 'Edit museum' }}</div>
+      <div class="card-body">
+        <form method="post" action="{{ action_url }}" class="row g-3">
+          <div class="col-md-4">
+            <label class="form-label">Museum ID *</label>
+            <input name="museum_id" class="form-control" value="{{ museum.museum_id or '' }}" {% if mode == 'edit' %}readonly{% endif %} required>
+          </div>
+          <div class="col-md-8">
+            <label class="form-label">Museum name *</label>
+            <input name="name_of_museum" class="form-control" value="{{ museum.name_of_museum or '' }}" required>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">Alternative name</label>
+            <input name="alternate_museum_name" class="form-control" value="{{ museum.alternate_museum_name or '' }}">
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">Founder</label>
+            <input name="founder" class="form-control" value="{{ museum.founder or '' }}">
+          </div>
+          <div class="col-md-4">
+            <label class="form-label">Address line 1</label>
+            <input name="address_line_1" class="form-control" value="{{ museum.address_line_1 or '' }}">
+          </div>
+          <div class="col-md-4">
+            <label class="form-label">Address line 2</label>
+            <input name="address_line_2" class="form-control" value="{{ museum.address_line_2 or '' }}">
+          </div>
+          <div class="col-md-4">
+            <label class="form-label">Address line 3</label>
+            <input name="address_line_3" class="form-control" value="{{ museum.address_line_3 or '' }}">
+          </div>
+          <div class="col-md-4">
+            <label class="form-label">City</label>
+            <input name="village_town_city" class="form-control" value="{{ museum.village_town_city or '' }}">
+          </div>
+          <div class="col-md-4">
+            <label class="form-label">Postcode</label>
+            <input name="postcode" class="form-control" value="{{ museum.postcode or '' }}">
+          </div>
+          <div class="col-md-4">
+            <label class="form-label">Region/Country</label>
+            <input name="region_country" class="form-control" value="{{ museum.region_country or '' }}">
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">Size</label>
+            <select name="size" class="form-select">
+              {% for s in ['', 'small', 'medium', 'large', 'unknown'] %}
+              <option value="{{ s }}" {% if (museum.size or '') == s %}selected{% endif %}>{{ s or 'Select' }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">Accreditation</label>
+            <input name="accreditation" class="form-control" value="{{ museum.accreditation or '' }}" placeholder="Unaccredited">
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">AIM size</label>
+            <input name="aim_size" class="form-control" value="{{ museum.aim_size or '' }}" placeholder="Small Museum">
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">Year opened</label>
+            <input name="year_opened" class="form-control" value="" placeholder="e.g. 2005">
+            <div class="form-text">Use four digits. Existing raw value: {{ museum.year_opened or '-' }}</div>
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">Year closed</label>
+            <input name="year_closed" class="form-control" value="" placeholder="9999 if open">
+            <div class="form-text">Existing raw value: {{ museum.year_closed or '-' }}</div>
+          </div>
+          <div class="col-md-9">
+            <label class="form-label">Notes</label>
+            <textarea name="notes" class="form-control" rows="3">{{ museum.notes or '' }}</textarea>
+          </div>
+          <div class="col-12 d-flex gap-2">
+            <button class="btn btn-primary">{{ 'Add Museum' if mode == 'add' else 'Save Changes' }}</button>
+            <a href="{{ url_for('museums') }}" class="btn btn-outline-secondary">Cancel</a>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

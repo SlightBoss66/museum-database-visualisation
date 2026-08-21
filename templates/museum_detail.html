@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+{% block title %}{{ museum.name_of_museum }} · MuseumDB{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-start mb-3">
+  <div>
+    <h2 class="mb-1">{{ museum.name_of_museum }}</h2>
+    <p class="text-muted mb-0"><code>{{ museum.museum_id }}</code> · {{ museum.region_country or 'Unknown region' }}</p>
+  </div>
+  <div class="d-flex gap-2">
+    <a href="{{ url_for('museums') }}" class="btn btn-outline-secondary">Back</a>
+    {% if is_admin %}
+      <a href="{{ url_for('edit_museum', museum_id=museum.museum_id) }}" class="btn btn-primary">Edit</a>
+      <form method="post" action="{{ url_for('delete_museum', museum_id=museum.museum_id) }}" onsubmit="return confirm('Delete this museum and related records?');">
+        <button class="btn btn-outline-danger">Delete</button>
+      </form>
+    {% endif %}
+  </div>
+</div>
+
+<div class="row g-4">
+  <div class="col-lg-8">
+    <div class="card shadow-sm mb-4">
+      <div class="card-header bg-white fw-semibold">Core information</div>
+      <div class="card-body">
+        <div class="row detail-grid">
+          <div class="col-md-6"><span>Name</span><strong>{{ museum.name_of_museum or '-' }}</strong></div>
+          <div class="col-md-6"><span>Alternative name</span><strong>{{ museum.alternate_museum_name or '-' }}</strong></div>
+          <div class="col-md-6"><span>Address</span><strong>{{ museum.address_line_1 or '-' }} {{ museum.address_line_2 or '' }}</strong></div>
+          <div class="col-md-6"><span>City</span><strong>{{ museum.village_town_city or '-' }}</strong></div>
+          <div class="col-md-6"><span>Postcode</span><strong>{{ museum.postcode or '-' }}</strong></div>
+          <div class="col-md-6"><span>Region/Country</span><strong>{{ museum.region_country or '-' }}</strong></div>
+          <div class="col-md-6"><span>Admin area</span><strong>{{ museum.admin_area or '-' }}</strong></div>
+          <div class="col-md-6"><span>Size</span><strong>{{ museum.size or '-' }}</strong></div>
+          <div class="col-md-6"><span>Accreditation</span><strong>{{ museum.accreditation or '-' }}</strong></div>
+          <div class="col-md-6"><span>AIM size</span><strong>{{ museum.aim_size or '-' }}</strong></div>
+          <div class="col-md-6"><span>Year opened</span><strong>{{ museum.year_opened or '-' }}</strong></div>
+          <div class="col-md-6"><span>Year closed</span><strong>{{ museum.year_closed or '-' }}</strong></div>
+          <div class="col-md-12"><span>Founder</span><strong>{{ museum.founder or '-' }}</strong></div>
+        </div>
+      </div>
+    </div>
+    <div class="card shadow-sm">
+      <div class="card-header bg-white fw-semibold">Notes</div>
+      <div class="card-body"><p class="mb-0">{{ museum.notes or '-' }}</p></div>
+    </div>
+  </div>
+  <div class="col-lg-4">
+    <div class="card shadow-sm mb-4">
+      <div class="card-header bg-white fw-semibold">Visitor records</div>
+      <div class="card-body">
+        {% for item in visitors %}
+          <div class="border rounded p-2 mb-2 small">{{ item.visitor }}</div>
+        {% else %}
+          <p class="text-muted mb-0">No visitor records.</p>
+        {% endfor %}
+      </div>
+    </div>
+    <div class="card shadow-sm">
+      <div class="card-header bg-white fw-semibold">Additional notes table</div>
+      <div class="card-body">
+        {% for item in notes %}
+          <div class="border rounded p-2 mb-2 small">{{ item.notes }}</div>
+        {% else %}
+          <p class="text-muted mb-0">No linked notes.</p>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

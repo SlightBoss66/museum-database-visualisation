@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block title %}Database · MuseumDB{% endblock %}
+{% block content %}
+<div class="mb-4">
+  <h2 class="mb-1">Database Management and Performance</h2>
+  <p class="text-muted mb-0">This page supports the database improvement and evaluation part of the project report.</p>
+</div>
+<div class="row g-4">
+  <div class="col-lg-5">
+    <div class="card shadow-sm mb-4">
+      <div class="card-header bg-white fw-semibold">Table counts</div>
+      <div class="table-responsive"><table class="table table-sm mb-0"><thead class="table-light"><tr><th>Table</th><th>Rows</th></tr></thead><tbody>{% for c in counts %}<tr><td>{{ c.table_name }}</td><td>{{ c.count }}</td></tr>{% endfor %}</tbody></table></div>
+    </div>
+  </div>
+  <div class="col-lg-7">
+    <div class="card shadow-sm mb-4">
+      <div class="card-header bg-white d-flex justify-content-between align-items-center"><strong>Recommended indexes</strong>{% if is_admin %}<form method="post" action="{{ url_for('create_indexes') }}"><button class="btn btn-sm btn-primary">Create indexes</button></form>{% endif %}</div>
+      <div class="card-body"><pre class="code-block">{% for stmt in index_statements %}{{ stmt }}
+{% endfor %}</pre><a href="{{ url_for('performance_test') }}" class="btn btn-outline-secondary">Run EXPLAIN ANALYZE test</a></div>
+    </div>
+  </div>
+</div>
+<div class="card shadow-sm">
+  <div class="card-header bg-white fw-semibold">Existing indexes</div>
+  <div class="table-responsive"><table class="table table-sm align-middle mb-0"><thead class="table-light"><tr><th>Table</th><th>Index</th><th>Definition</th></tr></thead><tbody>{% for i in indexes %}<tr><td>{{ i.tablename }}</td><td>{{ i.indexname }}</td><td><code>{{ i.indexdef }}</code></td></tr>{% endfor %}</tbody></table></div>
+</div>
+{% endblock %}

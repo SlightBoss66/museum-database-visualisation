@@ -1,0 +1,151 @@
+{% extends "base.html" %}
+{% block title %}Museums · MuseumDB{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <div>
+    <h2 class="mb-1">Museum Search</h2>
+    <p class="text-muted mb-0">Search by name, ID, postcode, city, region, accreditation, size and opening year.</p>
+  </div>
+  {% if is_admin %}<a href="{{ url_for('add_museum') }}" class="btn btn-primary">Add Museum</a>{% endif %}
+</div>
+
+<div class="card shadow-sm mb-4">
+  <div class="card-body">
+    <form method="get" class="row g-3">
+      <div class="col-lg-3 col-md-6">
+        <label class="form-label">Keyword</label>
+        <input name="q" class="form-control" value="{{ args.get('q','') }}" placeholder="Name, ID, postcode...">
+      </div>
+      <div class="col-lg-2 col-md-6">
+        <label class="form-label">City</label>
+        <input name="city" class="form-control" value="{{ args.get('city','') }}" placeholder="e.g. Manchester">
+      </div>
+      <div class="col-lg-2 col-md-6">
+        <label class="form-label">Region</label>
+        <select name="region" class="form-select">
+          <option value="">All</option>
+          {% for item in options.regions %}<option value="{{ item }}" {% if args.get('region') == item %}selected{% endif %}>{{ item }}</option>{% endfor %}
+        </select>
+      </div>
+      <div class="col-lg-2 col-md-6">
+        <label class="form-label">Accreditation</label>
+        <select name="accreditation" class="form-select">
+          <option value="">All</option>
+          {% for item in options.accreditations %}<option value="{{ item }}" {% if args.get('accreditation') == item %}selected{% endif %}>{{ item }}</option>{% endfor %}
+        </select>
+      </div>
+      <div class="col-lg-1 col-md-4">
+        <label class="form-label">Size</label>
+        <select name="size" class="form-select">
+          <option value="">All</option>
+          {% for item in options.sizes %}<option value="{{ item }}" {% if args.get('size') == item %}selected{% endif %}>{{ item }}</option>{% endfor %}
+        </select>
+      </div>
+      <div class="col-lg-1 col-md-4">
+        <label class="form-label">From</label>
+        <input name="year_from" class="form-control" value="{{ args.get('year_from','') }}" placeholder="2000">
+      </div>
+      <div class="col-lg-1 col-md-4">
+        <label class="form-label">To</label>
+        <input name="year_to" class="form-control" value="{{ args.get('year_to','') }}" placeholder="2026">
+      </div>
+      <div class="col-12">
+        <div class="border rounded-3 p-3 bg-light">
+          <div class="fw-semibold mb-2">Advanced attribute filters</div>
+          {% for i in range(1, 4) %}
+          <div class="row g-2 mb-2">
+            <div class="col-lg-3 col-md-4">
+              <select name="filter_field_{{ i }}" class="form-select">
+                <option value="">Filter {{ i }} attribute</option>
+                {% for key, item in advanced_fields.items() %}
+                <option value="{{ key }}" {% if args.get('filter_field_' ~ i) == key %}selected{% endif %}>{{ item.label }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="col-lg-2 col-md-3">
+              <select name="filter_op_{{ i }}" class="form-select">
+                <option value="contains" {% if args.get('filter_op_' ~ i, 'contains') == 'contains' %}selected{% endif %}>contains</option>
+                <option value="equals" {% if args.get('filter_op_' ~ i) == 'equals' %}selected{% endif %}>equals</option>
+                <option value="starts_with" {% if args.get('filter_op_' ~ i) == 'starts_with' %}selected{% endif %}>starts with</option>
+                <option value="gte" {% if args.get('filter_op_' ~ i) == 'gte' %}selected{% endif %}>&gt;= year</option>
+                <option value="lte" {% if args.get('filter_op_' ~ i) == 'lte' %}selected{% endif %}>&lt;= year</option>
+              </select>
+            </div>
+            <div class="col-lg-7 col-md-5">
+              <input name="filter_value_{{ i }}" class="form-control" value="{{ args.get('filter_value_' ~ i, '') }}" placeholder="Filter value">
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+      <div class="col-md-2">
+        <label class="form-label">Sort by</label>
+        <select name="sort_by" class="form-select">
+          {% for key,label in {'name':'Name','region':'Region','city':'City','size':'Size','year_opened':'Opened year','accreditation':'Accreditation','museum_id':'Museum ID'}.items() %}
+          <option value="{{ key }}" {% if sort_by == key %}selected{% endif %}>{{ label }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-md-2">
+        <label class="form-label">Order</label>
+        <select name="sort_order" class="form-select">
+          <option value="asc" {% if sort_order == 'asc' %}selected{% endif %}>Ascending</option>
+          <option value="desc" {% if sort_order == 'desc' %}selected{% endif %}>Descending</option>
+        </select>
+      </div>
+      <div class="col-md-2">
+        <label class="form-label">Page size</label>
+        <select name="page_size" class="form-select">
+          {% for n in page_size_options %}<option value="{{ n }}" {% if page_size == n %}selected{% endif %}>{{ n }}</option>{% endfor %}
+        </select>
+      </div>
+      <div class="col-md-8 d-flex align-items-end gap-2">
+        <button class="btn btn-primary">Search</button>
+        <a href="{{ url_for('museums') }}" class="btn btn-outline-secondary">Reset</a>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div class="card shadow-sm">
+  <div class="card-header bg-white d-flex justify-content-between align-items-center">
+    <strong>{{ total }} result(s)</strong>
+    <span class="text-muted small">Page {{ page }} of {{ total_pages }}</span>
+  </div>
+  <div class="table-responsive">
+    <table class="table table-hover align-middle mb-0">
+      <thead class="table-light"><tr><th>ID</th><th>Name</th><th>City</th><th>Region</th><th>Size</th><th>Accreditation</th><th>Opened</th><th>Actions</th></tr></thead>
+      <tbody>
+      {% for m in museums %}
+        <tr>
+          <td><code>{{ m.museum_id }}</code></td>
+          <td class="fw-semibold"><a href="{{ url_for('museum_detail', museum_id=m.museum_id) }}">{{ m.name_of_museum }}</a></td>
+          <td>{{ m.village_town_city or '-' }}</td>
+          <td>{{ m.region_country or '-' }}</td>
+          <td>{{ m.size or '-' }}</td>
+          <td><span class="badge text-bg-light border">{{ m.accreditation or 'Unknown' }}</span></td>
+          <td>{{ m.opened_year or '-' }}</td>
+          <td class="text-nowrap">
+            <a class="btn btn-sm btn-outline-primary" href="{{ url_for('museum_detail', museum_id=m.museum_id) }}">View</a>
+            {% if is_admin %}<a class="btn btn-sm btn-outline-secondary" href="{{ url_for('edit_museum', museum_id=m.museum_id) }}">Edit</a>{% endif %}
+          </td>
+        </tr>
+      {% else %}
+        <tr><td colspan="8" class="text-center text-muted py-4">No museums found.</td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <div class="card-footer bg-white">
+    <nav>
+      <ul class="pagination mb-0">
+        {% set prev_args = args.to_dict() %}{% set _ = prev_args.update({'page': page-1}) %}
+        {% set next_args = args.to_dict() %}{% set _ = next_args.update({'page': page+1}) %}
+        <li class="page-item {% if page <= 1 %}disabled{% endif %}"><a class="page-link" href="{{ url_for('museums', **prev_args) }}">Previous</a></li>
+        <li class="page-item disabled"><span class="page-link">{{ page }} / {{ total_pages }}</span></li>
+        <li class="page-item {% if page >= total_pages %}disabled{% endif %}"><a class="page-link" href="{{ url_for('museums', **next_args) }}">Next</a></li>
+      </ul>
+    </nav>
+  </div>
+</div>
+{% endblock %}

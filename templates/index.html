@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% block title %}Dashboard · MuseumDB{% endblock %}
+{% block content %}
+<div class="hero-card p-4 p-lg-5 mb-4">
+  <div class="row align-items-center g-4">
+    <div class="col-lg-8">
+      <h1 class="display-6 fw-bold mb-2">Museums Database Querying and Visualisation</h1>
+      <p class="lead mb-0">A web-based interface for searching, updating and visualising the UK museums relational database.</p>
+    </div>
+    <div class="col-lg-4 text-lg-end">
+      <a href="{{ url_for('museums') }}" class="btn btn-light btn-lg me-2">Search Museums</a>
+      <a href="{{ url_for('visualisations') }}" class="btn btn-outline-light btn-lg">View Charts</a>
+    </div>
+  </div>
+</div>
+
+<div class="row g-3 mb-4">
+  <div class="col-md-3"><div class="stat-card"><span>Total Museums</span><strong>{{ stats.museums }}</strong></div></div>
+  <div class="col-md-3"><div class="stat-card"><span>Regions/Countries</span><strong>{{ stats.regions }}</strong></div></div>
+  <div class="col-md-3"><div class="stat-card"><span>Unaccredited</span><strong>{{ stats.unaccredited }}</strong></div></div>
+  <div class="col-md-3"><div class="stat-card"><span>Small Museums</span><strong>{{ stats.small }}</strong></div></div>
+</div>
+
+<div class="row g-4">
+  <div class="col-lg-8">
+    <div class="card shadow-sm h-100">
+      <div class="card-header bg-white fw-semibold">Recently opened museums in the database</div>
+      <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+          <thead class="table-light"><tr><th>ID</th><th>Name</th><th>City</th><th>Region</th><th>Opened</th></tr></thead>
+          <tbody>
+            {% for m in recent %}
+            <tr>
+              <td><code>{{ m.museum_id }}</code></td>
+              <td><a href="{{ url_for('museum_detail', museum_id=m.museum_id) }}">{{ m.name_of_museum }}</a></td>
+              <td>{{ m.village_town_city or '-' }}</td>
+              <td>{{ m.region_country or '-' }}</td>
+              <td>{{ m.opened_year or '-' }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-4">
+    <div class="card shadow-sm h-100">
+      <div class="card-header bg-white fw-semibold">Implemented functions</div>
+      <div class="card-body">
+        <ul class="feature-list mb-0">
+          <li>Multi-condition querying with pagination and sorting.</li>
+          <li>Admin-only create, update and delete operations.</li>
+          <li>Chart-based visualisation of region, size, accreditation and opening-year patterns.</li>
+          <li>Leaflet map based on latitude and longitude in the original TSV dataset.</li>
+          <li>Database index creation and EXPLAIN ANALYZE performance inspection.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

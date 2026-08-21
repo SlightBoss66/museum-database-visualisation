@@ -1,0 +1,99 @@
+{% extends "base.html" %}
+{% block title %}Visualisations · MuseumDB{% endblock %}
+{% block content %}
+<div class="mb-4">
+  <h2 class="mb-1">Data Visualisations</h2>
+  <p class="text-muted mb-0">Interactive charts generated from the PostgreSQL museums database.</p>
+</div>
+<div class="card shadow-sm mb-4">
+  <div class="card-body">
+    <form method="get" class="row g-3">
+      <div class="col-lg-3 col-md-6">
+        <label class="form-label">Group by</label>
+        <select name="dimension" class="form-select">
+          {% for key, item in dimensions.items() %}
+          <option value="{{ key }}" {% if dimension == key %}selected{% endif %}>{{ item.label }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-lg-2 col-md-6">
+        <label class="form-label">Chart type</label>
+        <select name="chart_type" class="form-select">
+          <option value="bar" {% if chart_type == 'bar' %}selected{% endif %}>Bar</option>
+          <option value="horizontal_bar" {% if chart_type == 'horizontal_bar' %}selected{% endif %}>Horizontal bar</option>
+          <option value="doughnut" {% if chart_type == 'doughnut' %}selected{% endif %}>Doughnut</option>
+          <option value="line" {% if chart_type == 'line' %}selected{% endif %}>Line</option>
+        </select>
+      </div>
+      <div class="col-lg-3 col-md-6">
+        <label class="form-label">Region filter</label>
+        <select name="region" class="form-select">
+          <option value="">All</option>
+          {% for r in options.regions %}
+          <option value="{{ r }}" {% if args.get('region') == r %}selected{% endif %}>{{ r }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-lg-1 col-md-3">
+        <label class="form-label">From</label>
+        <input name="year_from" class="form-control" value="{{ args.get('year_from','') }}" placeholder="1900">
+      </div>
+      <div class="col-lg-1 col-md-3">
+        <label class="form-label">To</label>
+        <input name="year_to" class="form-control" value="{{ args.get('year_to','') }}" placeholder="2026">
+      </div>
+      <div class="col-lg-2 col-md-6 d-flex align-items-end gap-2">
+        <button class="btn btn-primary">Update</button>
+        <a href="{{ url_for('visualisations') }}" class="btn btn-outline-secondary">Reset</a>
+      </div>
+    </form>
+  </div>
+</div>
+<div class="card shadow-sm mb-4">
+  <div class="card-header bg-white fw-semibold">Custom visualisation</div>
+  <div class="card-body"><canvas id="customChart" height="140"></canvas></div>
+</div>
+<div class="row g-4">
+  <div class="col-xl-6"><div class="card shadow-sm"><div class="card-header bg-white fw-semibold">Museums by region/country</div><div class="card-body"><canvas id="regionChart" height="170"></canvas></div></div></div>
+  <div class="col-xl-6"><div class="card shadow-sm"><div class="card-header bg-white fw-semibold">Museums by accreditation status</div><div class="card-body"><canvas id="accreditationChart" height="170"></canvas></div></div></div>
+  <div class="col-xl-6"><div class="card shadow-sm"><div class="card-header bg-white fw-semibold">Museums by size</div><div class="card-body"><canvas id="sizeChart" height="170"></canvas></div></div></div>
+  <div class="col-xl-6"><div class="card shadow-sm"><div class="card-header bg-white fw-semibold">Museums opened by year</div><div class="card-body"><canvas id="openedChart" height="170"></canvas></div></div></div>
+</div>
+{% endblock %}
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script>
+const chartData = {{ chart_data|safe }};
+const selectedChartType = "{{ chart_type }}";
+function labels(data){ return data.map(x => String(x.label)); }
+function values(data){ return data.map(x => Number(x.value)); }
+function makeFlexible(id, data, chartType){
+  const type = chartType === 'horizontal_bar' ? 'bar' : chartType;
+  const horizontal = chartType === 'horizontal_bar';
+  new Chart(document.getElementById(id), {
+    type: type,
+    data: { labels: labels(data), datasets: [{ label: 'Count', data: values(data), borderWidth: 1, tension: 0.25, pointRadius: 2 }] },
+    options: { indexAxis: horizontal ? 'y' : 'x', responsive: true, plugins: { legend: { display: type === 'doughnut' } }, scales: type === 'doughnut' ? {} : { y: { beginAtZero: true } } }
+  });
+}
+function makeBar(id, data, horizontal=false){
+  new Chart(document.getElementById(id), {
+    type: 'bar',
+    data: { labels: labels(data), datasets: [{ label: 'Count', data: values(data), borderWidth: 1 }] },
+    options: { indexAxis: horizontal ? 'y' : 'x', responsive: true, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } }
+  });
+}
+function makeLine(id, data){
+  new Chart(document.getElementById(id), {
+    type: 'line',
+    data: { labels: labels(data), datasets: [{ label: 'Opened museums', data: values(data), tension: 0.25, pointRadius: 2, borderWidth: 2 }] },
+    options: { responsive: true, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } }
+  });
+}
+makeFlexible('customChart', chartData.custom, selectedChartType);
+makeBar('regionChart', chartData.regions, true);
+makeBar('accreditationChart', chartData.accreditations, false);
+makeBar('sizeChart', chartData.sizes, false);
+makeLine('openedChart', chartData.opened);
+</script>
+{% endblock %}
